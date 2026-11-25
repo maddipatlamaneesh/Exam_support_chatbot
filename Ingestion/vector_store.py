@@ -1,17 +1,16 @@
 import chromadb
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DB_DIR = BASE_DIR / "ChromaDB" / "My_Database"
-
 
 client = chromadb.PersistentClient(
     path=str(DB_DIR)
 )
 
 
+# Create or retrieve collection
 def create_collection(pdf_name):
 
     collection_name = Path(pdf_name).stem.lower()
@@ -21,11 +20,10 @@ def create_collection(pdf_name):
         embedding_function=None
     )
 
-    print("Collection created:", collection_name)
-
     return collection
 
 
+# Prepare chunk records
 def prepare_chunks(chunks):
 
     ids = []
@@ -45,37 +43,13 @@ def prepare_chunks(chunks):
 
     return ids, documents, metadatas
 
-if __name__ == "__main__":
 
-    from Ingestion.loader import load_pdf
-    from Ingestion.chunker import chunk_documents
-    from Ingestion.embedder import generate_embeddings
+# Store records in ChromaDB
+def store_chunks(collection, ids, documents, metadatas, embeddings):
 
-    pdf_name = "AI_Part1_Theory_Quick_Revision.pdf"
-
-    # Step 1: Load PDF
-    documents = load_pdf(pdf_name)
-
-    # Step 2: Create chunks
-    chunks = chunk_documents(documents)
-
-    # Step 3: Create ChromaDB collection
-    collection = create_collection(pdf_name)
-
-    # Step 4: Prepare records
-    ids, texts, metadatas = prepare_chunks(chunks)
-
-    # Step 5: Generate embeddings
-    embeddings = generate_embeddings(texts)
-
-    # Step 6: Store records in ChromaDB
-    collection.add(
+    collection.upsert(
         ids=ids,
-        documents=texts,
+        documents=documents,
         metadatas=metadatas,
         embeddings=embeddings.tolist()
     )
-
-    # Step 7: Verify storage
-    print("\n========== STORAGE SUMMARY ==========")
-    print("Total records stored:", collection.count())
