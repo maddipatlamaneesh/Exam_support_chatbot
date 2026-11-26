@@ -5,9 +5,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 PDF_DIR = BASE_DIR / "DATA" / "pdf"
 
 
-def load_pdf(pdf_name):
+def load_pdf(pdf_path):
 
-    pdf_path = PDF_DIR / pdf_name
+    pdf_path = Path(pdf_path)
+
+    # Support existing CLI filenames
+    if not pdf_path.exists():
+        pdf_path = PDF_DIR / pdf_path
+
+    if not pdf_path.exists():
+        raise FileNotFoundError(
+            f"PDF not found: {pdf_path}"
+        )
 
     documents = []
 
@@ -22,7 +31,7 @@ def load_pdf(pdf_name):
                 documents.append({
                     "text": text,
                     "metadata": {
-                        "source": pdf_name,
+                        "source": pdf_path.name,
                         "page": page_number + 1
                     }
                 })

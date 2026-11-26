@@ -1,3 +1,5 @@
+import os
+
 from Ingestion.loader import load_pdf
 from Ingestion.chunker import chunk_documents
 from Ingestion.embedder import generate_embeddings
@@ -9,10 +11,10 @@ from Ingestion.vector_store import (
 )
 
 
-def ingest_pdf(pdf_name):
+def ingest_pdf(pdf_path):
 
     # Step 1: Load PDF
-    documents = load_pdf(pdf_name)
+    documents = load_pdf(pdf_path)
 
     # Step 2: Create chunks
     chunks = chunk_documents(documents)
@@ -23,10 +25,13 @@ def ingest_pdf(pdf_name):
     # Step 4: Generate embeddings
     embeddings = generate_embeddings(texts)
 
-    # Step 5: Create or retrieve collection
+    # Step 5: Get PDF filename
+    pdf_name = os.path.basename(pdf_path)
+
+    # Step 6: Create collection
     collection = create_collection(pdf_name)
 
-    # Step 6: Store records in ChromaDB
+    # Step 7: Store chunks
     store_chunks(
         collection,
         ids,
@@ -34,3 +39,6 @@ def ingest_pdf(pdf_name):
         metadatas,
         embeddings
     )
+
+    # Return collection name
+    return collection.name

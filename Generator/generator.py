@@ -25,7 +25,9 @@ def prepare_context(results):
 
         context += f"""
 Context {i + 1}:
+
 Source: {result["metadata"]["source"]}
+
 Page: {result["metadata"]["page"]}
 
 Content:
@@ -62,13 +64,25 @@ ANSWER:
     return prompt
 
 
-def generate_answer(query):
+def generate_answer(query, collection_name=None, include_sources=False):
 
     # Step 1: Retrieve relevant chunks
-    results = retrieve(query)
+    results = retrieve(
+        query,
+        collection_name=collection_name
+    )
 
     if not results:
-        return "No relevant information found in the uploaded documents."
+
+        answer = "No relevant information found in the uploaded documents."
+
+        if include_sources:
+            return {
+                "answer": answer,
+                "sources": []
+            }
+
+        return answer
 
     # Step 2: Prepare context
     context = prepare_context(results)
@@ -76,11 +90,18 @@ def generate_answer(query):
     # Step 3: Build prompt
     prompt = build_prompt(query, context)
 
-    # Step 4: Generate answer using Gemini
+    # Step 4: Generate answer
     response = client.models.generate_content(
         model=MODEL_NAME,
         contents=prompt
     )
 
-    # Step 5: Return answer
+    # Step 5: Return answer and sources
+    if include_sources:
+
+        return {
+            "answer": response.text,
+            "sources": results
+        }
+
     return response.text
