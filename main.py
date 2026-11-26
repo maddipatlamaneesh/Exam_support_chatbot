@@ -7,7 +7,7 @@ def main():
     while True:
 
         print("\n========== AI EXAM SUPPORT CHATBOT ==========")
-        print("1. Ingest PDF")
+        print("1. Ingest PDFs")
         print("2. Ask a Question")
         print("3. Exit")
 
@@ -15,14 +15,30 @@ def main():
 
         if choice == "1":
 
-            pdf_name = input("Enter PDF filename: ").strip()
-
             try:
-                ingest_pdf(pdf_name)
-                print("\nPDF ingestion completed successfully!")
+                n = int(input("\nEnter number of PDFs: "))
 
-            except Exception as e:
-                print("\nPDF ingestion failed:", e)
+                if n <= 0:
+                    print("Please enter a valid number.")
+                    continue
+
+                for i in range(n):
+
+                    pdf_name = input(
+                        f"\nEnter PDF {i + 1} filename: "
+                    ).strip()
+
+                    try:
+                        ingest_pdf(pdf_name)
+                        print(f"{pdf_name} ingested successfully!")
+
+                    except Exception as e:
+                        print(f"Failed to ingest {pdf_name}:", e)
+
+                print("\nPDF ingestion process completed!")
+
+            except ValueError:
+                print("Please enter a valid number.")
 
         elif choice == "2":
 
